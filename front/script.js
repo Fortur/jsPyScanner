@@ -4,6 +4,10 @@ const imageOutput = document.getElementById('image-element');
 const canvas = document.getElementById('canvas');
 const body = document.body;
 
+// Храненеие данных документа
+let documentData = {};
+
+// Вспомогательные функции ----
 function getDataIdForField(field) {
     return `id||data||${field}`;
 }
@@ -16,6 +20,9 @@ function getDataIdByInputId(inputId) {
     return `id||data||${inputId.split('||').pop()}`;
 }
 
+// ----
+
+// Отправка запроса и обработка результатов с их отрисовкой
 async function SendDocPhoto() {
     delete imageContainer.classList.add('displayNone');
 
@@ -39,18 +46,21 @@ async function SendDocPhoto() {
 
         const fixedJsonStr = result.replaceAll('\\', '\\\\');
 
+        documentData = JSON.parse(fixedJsonStr);
+
         imageOutput.src = encodedData;
         delete imageContainer.classList.remove('displayNone');
         setTimeout(() => {
             canvas.width;
-            showSendDocResult(JSON.parse(fixedJsonStr), [imageOutput.clientHeight, imageOutput.clientWidth], imageOutput.clientHeight / imageOutput.naturalHeight);
+            showSendDocResult([imageOutput.clientHeight, imageOutput.clientWidth], imageOutput.clientHeight / imageOutput.naturalHeight);
         }, 0);
     } catch (e) {
         console.log('Huston we have problem...:', e);
     }
 }
 
-function showSendDocResult(documentData, imgSize, imgResizeIdx) {
+// Отрисовка картинки и данных из документа
+function showSendDocResult(imgSize, imgResizeIdx) {
     const {
         document_type: docType, document_geometry: geometry, fields,
     } = documentData;
@@ -61,6 +71,7 @@ function showSendDocResult(documentData, imgSize, imgResizeIdx) {
 
 }
 
+// Отрисовка таблицы с полями документа
 function drawTable(docType, fields) {
     const defaultBorder = '1px solid black';
     const docTypeTag = document.createElement('p');
@@ -126,22 +137,27 @@ function drawTable(docType, fields) {
     body.appendChild(tbl);
 }
 
+// Функция для изменения значений пользователем вручную
 function editValue(inputId, attr) {
     const {value} = document.getElementById(inputId);
     const dataId = getDataIdByInputId(inputId);
 
-
     const dataField = document.getElementById(dataId);
     if (value) {
         dataField.classList.add('textDecoration');
+        documentData.fields[attr].user_custom_data = value;
     } else {
         dataField.classList.remove('textDecoration');
+        delete documentData.fields[attr].user_custom_data;
     }
-
-    console.log(dataId, value, attr);
 }
 
+// Отрисовка границ найденных документов
 function drawDocCanvas(templates, imgSize, imgResizeIdx) {
+    if (!templates || templates.length === 0) {
+        return;
+    }
+
     const ctx = canvas.getContext('2d');
     ctx.canvas.height = imgSize[0];
     ctx.canvas.width = imgSize[1];
@@ -150,37 +166,29 @@ function drawDocCanvas(templates, imgSize, imgResizeIdx) {
         const {template_quad: templateQuad} = template;
         const startPoint = templateQuad.shift();
         ctx.strokeStyle = 'red';
-        ctx.beginPath(); // Начинает новый путь
-        ctx.moveTo(startPoint[0] * imgResizeIdx, startPoint[1] * imgResizeIdx); // Передвигает перо в точку (30, 50)
+        ctx.beginPath();
+        ctx.moveTo(startPoint[0] * imgResizeIdx, startPoint[1] * imgResizeIdx);
 
         for (const templateQuadPoint of templateQuad) {
-            ctx.lineTo(templateQuadPoint[0] * imgResizeIdx, templateQuadPoint[1] * imgResizeIdx); // Рисует линию до точки (150, 100)
+            ctx.lineTo(templateQuadPoint[0] * imgResizeIdx, templateQuadPoint[1] * imgResizeIdx);
         }
         ctx.closePath();
-        ctx.stroke(); // Отображает путь
+        ctx.stroke();
     }
 }
 
+// Кодирование картинки в base64
 async function encodeFileToBase64Async(encodedData) {
     return new Promise((resolve, reject) => {
         try {
             const fileReader = new FileReader();
             fileReader.onload = function (fileLoadedEvent) {
-                const srcData = fileLoadedEvent.target.result; // <--- data: base64
+                const srcData = fileLoadedEvent.target.result;
                 resolve(srcData);
-
-                // var newImage = document.createElement('img');
-                // newImage.src = srcData;
-                //
-                // document.getElementById("imgTest").innerHTML = newImage.outerHTML;
-                // alert("Converted Base64 version is " + document.getElementById("imgTest").innerHTML);
-                // console.log("Converted Base64 version is " + document.getElementById("imgTest").innerHTML);
             };
             fileReader.readAsDataURL(encodedData);
         } catch (err) {
             reject(err);
         }
     });
-
-
 }
