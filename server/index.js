@@ -2,7 +2,7 @@ const {spawn} = require('child_process');
 
 
 const runPy = (funcName, imageBase64, jsonDocString) => new Promise(function (resolve, reject) {
-    const pyLib = spawn('C:/Users/andre/AppData/Local/Programs/Python/Python311/python.exe', ['./server/bridgeJs2Py.py', funcName, jsonDocString]);
+    const pyLib = spawn(process.env.PYTHON_PATH, ['./server/bridgeJs2Py.py', funcName, jsonDocString]);
 
     pyLib.stdin.write(imageBase64);
     pyLib.stdin.end();
@@ -23,7 +23,7 @@ async function getDocumentProcessed(docBase64) {
         return result.toString('ascii');
     } catch (err) {
         console.log('err:', err.toString('ascii'));
-        return {success: false};
+        throw err;
     }
 }
 
@@ -33,7 +33,7 @@ async function registerResult(docBase64, docData) {
         return result.toString('ascii');
     } catch (err) {
         console.log('err:', err.toString('ascii'));
-        return {success: false};
+        throw err;
     }
 }
 
