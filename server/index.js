@@ -1,10 +1,10 @@
 const {spawn} = require('child_process');
 
 
-const runPy = (funcName, param1, param2) => new Promise(function (resolve, reject) {
-    const pyLib = spawn('C:/Users/andre/AppData/Local/Programs/Python/Python311/python.exe', ['./server/bridgeJs2Py.py', funcName]);
+const runPy = (funcName, imageBase64, jsonDocString) => new Promise(function (resolve, reject) {
+    const pyLib = spawn('C:/Users/andre/AppData/Local/Programs/Python/Python311/python.exe', ['./server/bridgeJs2Py.py', funcName, jsonDocString]);
 
-    pyLib.stdin.write(param1);
+    pyLib.stdin.write(imageBase64);
     pyLib.stdin.end();
 
     pyLib.stdout.on('data', function (data) {
@@ -23,9 +23,19 @@ async function getDocumentProcessed(docBase64) {
         return result.toString('ascii');
     } catch (err) {
         console.log('err:', err.toString('ascii'));
-        throw(err);
+        return {success: false};
+    }
+}
+
+async function registerResult(docBase64, docData) {
+    try {
+        const result = await runPy('lib_register_result', docBase64, JSON.stringify(docData));
+        return result.toString('ascii');
+    } catch (err) {
+        console.log('err:', err.toString('ascii'));
+        return {success: false};
     }
 }
 
 
-module.exports = {getDocumentProcessed};
+module.exports = {getDocumentProcessed, registerResult};

@@ -26,27 +26,21 @@ function getDataIdByInputId(inputId) {
 async function SendDocPhoto() {
     delete imageContainer.classList.add('displayNone');
 
-    const ctrl = new AbortController();    // timeout
-    setTimeout(() => ctrl.abort(), 5000);
-
     const photo = imageInput.files[0];
     const encodedData = await encodeFileToBase64Async(photo);
-    const body = JSON.stringify({
-        image: encodedData,
-    });
 
     try {
-        const result = await fetch('http://localhost:3000', {
-            method: 'POST', headers: {
-                'Accept': 'application/json', 'Content-Type': 'application/json',
-            }, body, signal: ctrl.signal,
+        const result = await fetch('http://localhost:3000/startDocumentProcessed', {
+            method: 'POST',
+            headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+            body: JSON.stringify({image: encodedData}),
         }).then(function (response) {
             return response.json();
         });
 
         const fixedJsonStr = result.replaceAll('\\', '\\\\');
 
-        documentData = JSON.parse(fixedJsonStr);
+        documentData = {...JSON.parse(fixedJsonStr), encodedData};
 
         imageOutput.src = encodedData;
         delete imageContainer.classList.remove('displayNone');
@@ -69,6 +63,25 @@ function showSendDocResult(imgSize, imgResizeIdx) {
 
     drawTable(docType, fields);
 
+    drawButton();
+}
+
+function drawButton() {
+    const buttonTag = document.createElement('button');
+    buttonTag.appendChild(document.createTextNode("Отправить финальный результат"));
+    buttonTag.setAttribute('onclick', 'sendFinalData()');
+    buttonTag.setAttribute('id', 'sendFinalDataButton');
+    body.appendChild(buttonTag);
+}
+
+async function sendFinalData() {
+    const result = await fetch('http://localhost:3000/registerResult', {
+        method: 'POST',
+        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        body: JSON.stringify({image: documentData.encodedData, document_data_fields: documentData.fields}),
+    }).then(function (response) {
+        // todo очистить всю информацию, вывести сообщение успеха
+    });
 }
 
 // Отрисовка таблицы с полями документа
@@ -79,7 +92,6 @@ function drawTable(docType, fields) {
 
     const tbl = document.createElement('table');
     tbl.style.width = '100px';
-    console.log(fields);
 
     fields = {
         'Поле': {
@@ -145,10 +157,10 @@ function editValue(inputId, attr) {
     const dataField = document.getElementById(dataId);
     if (value) {
         dataField.classList.add('textDecoration');
-        documentData.fields[attr].user_custom_data = value;
+        documentData.fields[attr].verified_value = value;
     } else {
         dataField.classList.remove('textDecoration');
-        delete documentData.fields[attr].user_custom_data;
+        delete documentData.fields[attr].verified_value;
     }
 }
 

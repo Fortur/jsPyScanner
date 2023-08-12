@@ -6,7 +6,7 @@ funcName = sys.argv[1]
 
 
 if funcName == 'lib_register_result':
-    funcParam2 = sys.argv[3]
+    funcParam2 = sys.argv[2]
     res = library.lib_register_result(funcParam1, funcParam2)
     print(res)
     sys.stdout.flush()
