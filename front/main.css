@@ -1,0 +1,15 @@
+.resultImage {
+    max-height: 800px;
+}
+
+.displayNone {
+    display: none;
+}
+
+.canvas {
+    position: absolute;
+}
+
+.imageContainer {
+
+}
