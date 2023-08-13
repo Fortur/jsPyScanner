@@ -38,7 +38,7 @@ async function sendRequest(route, data) {
         return response.json();
     });
 
-    return typeof result === 'string' ? result.replaceAll('\\', '\\\\') : null;
+    return typeof result === 'string' ? result.replaceAll('\\', '\\\\') : result;
 }
 
 // Отправка запроса и обработка результатов с их отрисовкой
@@ -72,6 +72,11 @@ function drawImage(imgBase64) {
 async function sendDocPhotoAndCacheResult(imgBase64) {
     const documentProcessedData = await sendRequest('startDocumentProcessed', {image: imgBase64});
 
+    if (!documentProcessedData) {
+        alert('Ошибка запроса');
+        throw new Error('Req error');
+    }
+
     documentData = {...JSON.parse(documentProcessedData), encodedData: imgBase64};
 }
 
@@ -101,8 +106,10 @@ function drawButton() {
 
 // Отправка финальных данных с картинкой
 async function sendFinalData() {
-    await sendRequest('registerResult', {image: documentData.encodedData, document_data_fields: documentData.fields});
-    // todo очистить всю информацию, вывести сообщение успеха
+    const res = await sendRequest('registerResult', {
+        image: documentData.encodedData,
+        document_data_fields: documentData.fields,
+    });
 
     const newCanvas = document.createElement('canvas');
     newCanvas.setAttribute('id', 'canvas');
@@ -119,7 +126,11 @@ async function sendFinalData() {
     }
 
     delete imageContainer.classList.add('displayNone');
-    alert('Данные успешно сохранены');
+    if (!res) {
+        alert('Ошибка запроса');
+    } else {
+        alert('Данные успешно сохранены');
+    }
 }
 
 function drawDocName(docType) {
