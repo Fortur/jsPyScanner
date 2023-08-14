@@ -30,15 +30,13 @@ function createIdToClear(createdId) {
 
 // Отправка запросов
 async function sendRequest(route, data) {
-    const result = await fetch(`http://localhost:3000/${route}`, {
+    return fetch(`http://localhost:3000/${route}`, {
         method: 'POST',
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
         body: JSON.stringify(data),
     }).then(function (response) {
         return response.json();
     });
-
-    return typeof result === 'string' ? result.replaceAll('\\', '\\\\') : result;
 }
 
 // Отправка запроса и обработка результатов с их отрисовкой
@@ -49,8 +47,10 @@ async function SendDocPhotoAndDrawResult() {
     const imgBase64 = await encodeFileToBase64Async(photo);
 
     try {
+        console.log('Send file...');
         await sendDocPhotoAndCacheResult(imgBase64);
 
+        console.log('draw result');
         drawImage(imgBase64);
 
         // Отрисовка всех элементов, когда уже отрисована картинка и известны её размеры
@@ -64,6 +64,7 @@ async function SendDocPhotoAndDrawResult() {
 
 // Отрисовка картинки
 function drawImage(imgBase64) {
+    console.log('draw image');
     imageOutput.src = imgBase64;
     delete imageContainer.classList.remove('displayNone');
 }
@@ -97,6 +98,7 @@ function showProcessedDocResult(imgSize, imgResizeIdx) {
 
 // Отрисовка кнопки
 function drawButton() {
+    console.log('draw button');
     const buttonTag = document.createElement('button');
     buttonTag.appendChild(document.createTextNode('Отправить финальный результат'));
     buttonTag.setAttribute('onclick', 'sendFinalData()');
@@ -106,6 +108,7 @@ function drawButton() {
 
 // Отправка финальных данных с картинкой
 async function sendFinalData() {
+    console.log('send file with final data...');
     const res = await sendRequest('registerResult', {
         image: documentData.encodedData,
         document_data_fields: documentData.fields,
@@ -134,6 +137,7 @@ async function sendFinalData() {
 }
 
 function drawDocName(docType) {
+    console.log('draw doc name');
     const docTypeTag = document.createElement('div');
     docTypeTag.setAttribute('id', createIdToClear());
     docTypeTag.appendChild(document.createTextNode(`Название документа: ${docType}`));
@@ -142,6 +146,7 @@ function drawDocName(docType) {
 
 // Отрисовка таблицы с полями документа
 function drawTable(fields) {
+    console.log('draw table');
     const defaultBorder = '1px solid black';
 
     const tbl = document.createElement('table');
@@ -221,6 +226,7 @@ function editValue(inputId, attr) {
 
 // Отрисовка границ найденных документов
 function drawDocCanvas(templates, imgSize, imgResizeIdx) {
+    console.log('draw canvas');
     if (!templates || templates.length === 0) {
         return;
     }

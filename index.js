@@ -5,6 +5,10 @@ const asyncWrap = require('./server/modules/asyncWrap');
 
 const {getDocumentProcessed, registerResult} = require('./server');
 
+if (!process.env.PYTHON_PATH){
+    throw new Error('env PYTHON_PATH is required')
+}
+
 const app = express();
 const port = process.env.PORT || 3000;
 

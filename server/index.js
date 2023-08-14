@@ -19,12 +19,17 @@ const runPy = (funcName, imageBase64, jsonDocString) => new Promise(function (re
 
 async function getDocumentProcessed(docBase64) {
     try {
+        logger.info('getDocumentProcessed init');
         const result = await runPy('lib_process_image', docBase64);
-        const stringResult = result.toString('ascii');
+        const stringResult = JSON.parse(String.fromCharCode(...result));
 
-        logger.info('getDocumentProcessed success:', stringResult);
+        logger.info(`getDocumentProcessed success`);
 
-        return stringResult;
+        if (!stringResult || !stringResult.document_type || !stringResult.fields) {
+            throw new Error('invalid python function lib_process_image response');
+        }
+
+        return JSON.stringify(stringResult);
     } catch (err) {
         logger.error('err:', err.toString('ascii'));
         throw err;
@@ -33,6 +38,7 @@ async function getDocumentProcessed(docBase64) {
 
 async function registerResult(docBase64, docData) {
     try {
+        logger.info(`registerResult init`);
         const result = await runPy('lib_register_result', docBase64, JSON.stringify(docData));
         const stringResult = result.toString('ascii');
 
