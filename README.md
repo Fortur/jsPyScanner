@@ -56,8 +56,9 @@
 Должны быть установлены node и python3
 
 Проект запускается через файл index.js в корне проекта с обязательной переменной среды `PYTHON_PATH`,
-хранящей путь к исполняемому файлу python.exe (Пример: `C:/Users/UserName/AppData/Local/Programs/Python/Python311/python.exe`) 
-и необязательной переменной среды `PORT` для запуска на порту отличном от дефолтного 3000. 
+хранящей путь к исполняемому файлу python.exe (Пример: `C:/Users/UserName/AppData/Local/Programs/Python/Python311/python.exe`). 
+
+Сервер будет запущен на порту 3000
 
 Необходимо установить необходимые модули при помощи команды `npm install`
 
